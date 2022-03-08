@@ -4,7 +4,7 @@ import com.zakgof.velvetvideo.ISeekableInput
 import com.zakgof.velvetvideo.impl.VelvetVideoLib
 import ga.rubydesic.dmd.getShort
 import ga.rubydesic.dmd.setShort
-import net.minecraft.client.sounds.AudioStream
+import net.minecraft.client.sound.AudioStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.sound.sampled.AudioFormat
@@ -42,7 +42,7 @@ class AudioStreamVelvet(input: ISeekableInput, private val convertToMono: Boolea
 
     override fun getFormat() = desiredFormat
 
-    override fun read(len: Int): ByteBuffer {
+    override fun getBuffer(len: Int): ByteBuffer {
         val buffer = ByteBuffer.allocateDirect(len + 8192)
         val iter = stream.iterator()
 

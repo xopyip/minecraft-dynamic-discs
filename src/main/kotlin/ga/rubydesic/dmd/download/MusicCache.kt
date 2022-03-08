@@ -12,7 +12,7 @@ import ga.rubydesic.dmd.util.AudioStreamVelvet
 import ga.rubydesic.dmd.util.FileBufferedSeekableInput
 import kotlinx.coroutines.*
 import kotlinx.coroutines.future.future
-import net.minecraft.client.sounds.AudioStream
+import net.minecraft.client.sound.AudioStream
 import org.apache.commons.io.FileUtils
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files

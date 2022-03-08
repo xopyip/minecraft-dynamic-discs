@@ -10,10 +10,10 @@ import kotlinx.coroutines.*
 import net.fabricmc.api.EnvType
 import net.fabricmc.fabric.api.network.ClientSidePacketRegistry
 import net.fabricmc.loader.api.FabricLoader
-import net.minecraft.core.Registry
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.world.item.CreativeModeTab
-import net.minecraft.world.item.Item
+import net.minecraft.item.Item
+import net.minecraft.item.ItemGroup
+import net.minecraft.util.Identifier
+import net.minecraft.util.registry.Registry
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
@@ -35,7 +35,7 @@ val dir: Path = Paths.get("dynamic-discs")
 val cacheDir: Path = dir.resolve("cache")
 
 
-val dynamicRecordItem = DynamicRecordItem(Item.Properties().tab(CreativeModeTab.TAB_MISC).stacksTo(1))
+val dynamicRecordItem = DynamicRecordItem(Item.Settings().group(ItemGroup.MISC).maxCount(1))
 
 val log: Logger = LogManager.getLogger("Dynamic Discs")
 lateinit var ytdlBinaryFuture: Deferred<Path>
@@ -60,7 +60,7 @@ fun init() {
         }
     })
 
-    Registry.register(Registry.ITEM, ResourceLocation(MOD_ID, "dynamic_disc"), dynamicRecordItem)
+    Registry.register(Registry.ITEM, Identifier(MOD_ID, "dynamic_disc"), dynamicRecordItem)
 
     if (!isDedicatedServer) {
         ClientboundPlayMusicPacket.register(ClientSidePacketRegistry.INSTANCE)

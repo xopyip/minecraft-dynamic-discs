@@ -14,20 +14,20 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import net.fabricmc.fabric.api.network.ServerSidePacketRegistry
-import net.minecraft.network.FriendlyByteBuf
-import net.minecraft.stats.Stats
-import net.minecraft.world.InteractionResult
-import net.minecraft.world.item.Item
-import net.minecraft.world.item.context.UseOnContext
-import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.level.block.JukeboxBlock
+import net.minecraft.block.Blocks
+import net.minecraft.block.JukeboxBlock
+import net.minecraft.item.Item
+import net.minecraft.item.ItemUsageContext
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.stat.Stats
+import net.minecraft.util.ActionResult
 
-class DynamicRecordItem(properties: Properties?) : Item(properties) {
+class DynamicRecordItem(properties: Item.Settings?) : Item(properties) {
 
-    private fun playSound(ctx: UseOnContext) {
-        val item = ctx.itemInHand
+    private fun playSound(ctx: ItemUsageContext) {
+        val item = ctx.stack
         val name = run {
-            val d = item.displayName.string
+            val d = item.name.string
             d.substring(1, d.length - 1)
         }
 
@@ -47,13 +47,13 @@ class DynamicRecordItem(properties: Properties?) : Item(properties) {
                 return@launch
             }
 
-            val pos = ctx.clickedPos!!
+            val pos = ctx.blockPos!!
             val (x, y, z) = pos
             val maxDistSq = config.attenuationDistance.squared()
-            server.playerList.players.forEach { player ->
-                val playerDistSq = player.distanceToSqr(x.toDouble(), y.toDouble(), z.toDouble())
+            server.playerManager.playerList.forEach { player ->
+                val playerDistSq = player.squaredDistanceTo(x.toDouble(), y.toDouble(), z.toDouble())
                 if (playerDistSq < maxDistSq) {
-                    val data = FriendlyByteBuf(Unpooled.buffer())
+                    val data = PacketByteBuf(Unpooled.buffer())
                     ClientboundPlayMusicPacket(MusicSource.YOUTUBE, pos, id).write(data)
                     ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, ClientboundPlayMusicPacket.packetId, data)
                 }
@@ -61,25 +61,25 @@ class DynamicRecordItem(properties: Properties?) : Item(properties) {
         }
     }
 
-    override fun useOn(ctx: UseOnContext): InteractionResult? {
-        val level = ctx.level
-        val blockPos = ctx.clickedPos
+    override fun useOnBlock(ctx: ItemUsageContext): ActionResult? {
+        val level = ctx.world
+        val blockPos = ctx.blockPos
         val blockState = level.getBlockState(blockPos)
-        return if (blockState.`is`(Blocks.JUKEBOX) && !blockState.getValue(JukeboxBlock.HAS_RECORD)) {
-            val itemStack = ctx.itemInHand
-            if (!level.isClientSide) {
+        return if (blockState.block === (Blocks.JUKEBOX) && !blockState.get(JukeboxBlock.HAS_RECORD)) {
+            val itemStack = ctx.stack
+            if (!level.isClient) {
                 (Blocks.JUKEBOX as JukeboxBlock).setRecord(level, blockPos, blockState, itemStack)
 
                 playSound(ctx)
 
-                itemStack.shrink(1)
+                itemStack.count--
                 val player = ctx.player
-                player?.awardStat(Stats.PLAY_RECORD)
+                player?.incrementStat(Stats.PLAY_RECORD)
             }
-            Analytics.event("Use Disc", level.isClientSide)
-            InteractionResult.sidedSuccess(level.isClientSide)
+            Analytics.event("Use Disc", level.isClient)
+            ActionResult.success(level.isClient)
         } else {
-            InteractionResult.PASS
+            ActionResult.PASS
         }
     }
 
