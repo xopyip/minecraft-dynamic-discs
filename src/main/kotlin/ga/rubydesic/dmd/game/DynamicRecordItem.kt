@@ -22,7 +22,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.stat.Stats
 import net.minecraft.util.ActionResult
 
-class DynamicRecordItem(properties: Item.Settings?) : Item(properties) {
+class DynamicRecordItem(properties: Settings?) : Item(properties) {
 
     private fun playSound(ctx: ItemUsageContext) {
         val item = ctx.stack
@@ -65,7 +65,7 @@ class DynamicRecordItem(properties: Item.Settings?) : Item(properties) {
         val level = ctx.world
         val blockPos = ctx.blockPos
         val blockState = level.getBlockState(blockPos)
-        return if (blockState.block === (Blocks.JUKEBOX) && !blockState.get(JukeboxBlock.HAS_RECORD)) {
+        return if (blockState.isOf(Blocks.JUKEBOX) && !blockState.get(JukeboxBlock.HAS_RECORD)) {
             val itemStack = ctx.stack
             if (!level.isClient) {
                 (Blocks.JUKEBOX as JukeboxBlock).setRecord(level, blockPos, blockState, itemStack)

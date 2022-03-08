@@ -36,6 +36,7 @@ dependencies {
     shade('com.github.zakgof:velvet-video:0.5.2') {
         exclude module: "guava"
         exclude group: "org.ow2.asm"
+        exclude group: "org.slf4j"
     }
     shade 'com.github.zakgof:velvet-video-natives:0.2.8.full'
 }
@@ -78,6 +79,7 @@ jar {
 shadowJar {
     classifier "useless"
     configurations = [project.configurations.shade]
+    relocate 'com.zakgof', 'ga.rubydesic.dmd.libs.com.zakgof'
 }
 prepareRemapJar{
     dependsOn(shadowJar)
